@@ -433,6 +433,10 @@ function createTag(feature, index, isInitial = false) {
     return tag;
 }
 
+let scrollPos = 0;
+const speed = 0.2; // Speed of scrolling
+const cloneThreshold = 200; // Adjust this threshold based on your content width
+
 function setupInfiniteScroll() {
     scrollContent.innerHTML = '';
     let isFirstSetup = !scrollContent.dataset.initialized;
@@ -447,7 +451,7 @@ function setupInfiniteScroll() {
     const contentWidth = scrollContent.scrollWidth;
     const containerWidth = scrollContainer.offsetWidth;
 
-    // Additional tags for infinite scroll
+    // Initial tags for the infinite scroll
     while (scrollContent.scrollWidth < containerWidth * 2) {
         features.forEach((feature) => {
             const tag = createTag(feature, 0, false);
@@ -455,25 +459,31 @@ function setupInfiniteScroll() {
         });
     }
 
-    let scrollPos = 0;
-    const speed = 1; // Change this to adjust the speed of the scroll
+    // Start the animation
+    requestAnimationFrame(animate);
+}
 
+function animate() {
+    scrollPos += speed;
 
-    function animate() {
-        // Increment the scroll position
-        scrollPos += speed;
-
-        // Use modulo to loop the scrollPos without jumping back
-        scrollPos = scrollPos % (contentWidth / 2); // Adjust based on your total content width
-
-        // Apply the transformation to scrollContent
-        scrollContent.style.transform = `translateX(-${scrollPos}px)`;
-        
-        // Request the next animation frame
-        requestAnimationFrame(animate);
-        }
-        requestAnimationFrame(animate);
+    // Check if we need to add more tags
+    if (scrollPos >= scrollContent.scrollWidth - scrollContainer.offsetWidth - cloneThreshold) {
+        features.forEach((feature) => {
+            const tag = createTag(feature, 0, false);
+            scrollContent.appendChild(tag);
+        });
     }
+
+    // Apply the transformation to scrollContent
+    scrollContent.style.transform = `translateX(-${scrollPos}px)`;
+
+    // Reset the position using modulo for continuous scrolling
+    if (scrollPos >= scrollContent.scrollWidth / 2) {
+        scrollPos -= scrollContent.scrollWidth / 2; // Adjust to allow wrapping
+    }
+
+    requestAnimationFrame(animate);
+}
 
     // Text scramble effect
     class TextScramble {
